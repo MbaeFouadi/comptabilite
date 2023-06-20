@@ -60,19 +60,18 @@ use Illuminate\Support\Facades\DB;
                                     $loca = DB::table("recettes")
                                         ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
-
                                         ->where("composante_id", Auth::user()->composante_id)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
+                                        ->where("droit_inscription", 0)
                                         ->whereMonth("recettes.date_enregistrement", $mois)
-
                                         ->select("recettes.*", "type_recettes.*", "recette_locations.*")
                                         ->first();
 
                                     $sum = DB::table("recettes")
                                         ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
-
                                         ->where("composante_id", Auth::user()->composante_id)
+                                        ->where("droit_inscription", 0)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
                                         ->whereMonth("recettes.date_enregistrement", $mois)
                                         ->select("recettes.*", "type_recettes.*", "recette_locations.*")
@@ -81,6 +80,7 @@ use Illuminate\Support\Facades\DB;
                                     $MontantTotal = DB::table("recettes")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                         ->where("recettes.composante_id", Auth::user()->composante_id)
+                                        ->where("droit_inscription", 0)
                                         ->where("annee_civil_id", $anne_civil->id)
                                         ->whereMonth("recettes.date_enregistrement", $mois)
                                         ->where("location", 0)
@@ -95,10 +95,10 @@ use Illuminate\Support\Facades\DB;
                                         $MontantLoca = DB::table("recettes")
                                             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                             ->where("recettes.composante_id", Auth::user()->composante_id)
+                                            ->where("droit_inscription", 0)
                                             ->where("annee_civil_id", $anne_civil->id)
                                             ->where("location", 1)
                                             ->whereMonth("recettes.date_enregistrement", $mois)
-
                                             ->select("type_recettes.prix")
                                             ->first();
 

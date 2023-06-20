@@ -115,6 +115,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/charge-recette/add-inscription', 'add_inscription')->name('add-inscription');
         Route::post('/charge-recette/add-inscription', 'store_inscription')->name('add-inscription');
         Route::get('/charge-recette/solder-recette-par-composantes', 'show_solder_recette_par_composantes')->name('solder-recette-par-composantes');
+        Route::get('/charge-recette/add-recette-inscription', 'add_recette_inscription')->name('add-recette-inscription');
+        Route::post('/charge-recette/add-recette-inscription', 'store_recette_inscription')->name('add-recette-inscription');
+        Route::get('/charge-recette/add-recette-preinscription', 'add_recette_preinscription')->name('add-recette-preinscription');
+        Route::post('/charge-recette/add-recette-preinscription', 'store_recette_preinscription')->name('add-recette-preinscription');
 
 
 
@@ -173,8 +177,10 @@ Route::middleware('auth')->group(function () {
         Route::post('/agent-comptable/add_budget/', 'store_budget')->name('add-budget');
         Route::get('/agent-comptable/detail_budget/', 'detail_budget')->name('detail-budget');
         Route::post('/agent-comptable/liste_detail_budget/', 'liste_budget')->name('liste-detail-budget');
-
         Route::get('/agent-comptable/hologramme_affecte/', 'hologramme_affecte')->name('hologramme_affecte');
+        Route::get('/agent-comptable/autre_recette/', 'autre_recette')->name('autre_recette');
+        Route::post('/agent-comptable/autre_recette/', 'store_autre_recette')->name('autre_recette');
+
 
     });
 

@@ -320,7 +320,7 @@ class agentComptableController extends Controller
         if (isset($budget)) {
             return back()->with("error", "Vous avez déjà inséré ce numero comptable");
         } else {
-            
+
             DB::table("budget_previsionnel")
                 ->insert([
                     "montant_realise" => $request->montant_realise,
@@ -354,22 +354,68 @@ class agentComptableController extends Controller
             ->distinct()
             ->get();
 
-            $annee_civil= $request->annee_civil_id;
+        $annee_civil = $request->annee_civil_id;
 
         if (count($datas) > 0) {
-            return view("detail_budget_pre", compact("datas","annee_civil"));
+            return view("detail_budget_pre", compact("datas", "annee_civil"));
         } else {
             return back()->with("error", "il n'y a pas eu de budget cette année");
         }
     }
 
-    public function hologramme_affecte ()
+    public function hologramme_affecte()
     {
         $hologrammesAffectes = DB::table('hologrammes')
             ->where('composante_id', Auth::user()->composante_id)
             ->get();
 
-            // dd($hologrammesAffectes);
+        // dd($hologrammesAffectes);
         return view('hologrammme-affecte', compact('hologrammesAffectes'));
+    }
+
+    public function autre_recette()
+    {
+        $composantes = DB::table("composantes")
+
+            ->get();
+
+        $recettes = DB::table("type_recettes")
+            ->join("composantes_types_recettes", 'type_recettes.id', 'composantes_types_recettes.type_recette_id')
+            ->where("composantes_types_recettes.composante_id", Auth::user()->composante_id)
+            ->where("etat", 1)
+            ->select("type_recettes.*", "type_recettes.id as id_type_recette", "composantes_types_recettes.*")
+            ->get();
+
+        return view("autre_recette", compact("composantes", "recettes"));
+    }
+
+    public function store_autre_recette(Request $request)
+    {
+        $request->validate([
+            "type_recette_id" => "required",
+            "montant" => "required",
+            "composante_id" => "required"
+        ]);
+
+        $civil = DB::table("annee_civil")->orderByDesc("id")->first();
+
+        $data = DB::table("recettes")
+            ->where("type_recette_id", $request->type_recette_id)
+            ->where("composante_id", $request->composante_id)
+            ->first();
+
+        if (!isset($data)) {
+            DB::table("recettes")->insert([
+                "type_recette_id" => $request->type_recette_id,
+                "montant" => $request->montant,
+                "annee_civil_id" => $civil->id,
+                "composante_id" => $request->composante_id,
+                "date_enregistrement" => now(),
+            ]);
+
+            return back()->with("success", "Recette enregistré avec success");
+        } else {
+            return back()->with("error", "Vous avez déjà enregistrer ce type de recettte");
+        }
     }
 }

@@ -314,11 +314,11 @@
                             <span>Recettes</span>
                         </a>
                         <ul class="sub-menu" aria-expanded="false">
-
-                            <li><a href="{{route('recette_preinscription')}}">Préinscriptions </a></li>
-                            <li><a href="{{route('recette_inscription')}}">Inscriptions</a></li>
-                            <li><a href="{{route('add-preinscription')}}">Enregistrer recette préinscriptions</a></li>
-                            <li><a href="{{route('add-inscription')}}">Enregistrer recette inscriptions</a></li>
+                        <li><a href="{{route('add-recette-inscription')}}">Recette préinscription et inscription</a></li>
+                            <!-- <li><a href="{{route('add-recette-inscription')}}">Recette inscriptions</a></li>            -->
+                            <li><a href="{{route('add-preinscription')}}">Enregistrer solde préinscriptions</a></li>
+                            <li><a href="{{route('add-inscription')}}">Enregistrer solde inscriptions</a></li>
+                           
                         </ul>
                     </li>
 
@@ -331,6 +331,8 @@
                             <li><a href="{{route('evolution_recette')}}">Journalière</a></li>
                             <li><a href="{{route('evolution_recette_mensuel')}}">Mensuel</a></li>
                             <li><a href="{{route('historique_recette_annuel')}}">Annuel</a></li>
+                            <li><a href="{{route('recette_preinscription')}}">Préinscriptions </a></li>
+                            <li><a href="{{route('recette_inscription')}}">Inscriptions</a></li>
                         </ul>
                     </li>
                     <li>
@@ -448,6 +450,12 @@
                         <a href="{{route('retrait_cheque')}}" class="waves-effect">
                             <div class="d-inline-block icons-sm mr-1"><i class="uim uim-airplay"></i></div>
                             <span>Enregistrer un chèque</span>
+                        </a>
+                    </li> 
+                    <li>
+                        <a href="{{route('autre_recette')}}" class="waves-effect">
+                            <div class="d-inline-block icons-sm mr-1"><i class="uim uim-airplay"></i></div>
+                            <span>Enregistrer une recette</span>
                         </a>
                     </li>
                     <li>

@@ -53,6 +53,7 @@ use Illuminate\Support\Facades\DB;
                                     $nbre_recette = DB::table("recettes")
                                         ->where("type_recette_id", $data->type_recette_id)
                                         ->where("composante_id", $data->composante_id)
+                                      
                                         ->whereMonth("date_enregistrement", $mois)
                                         ->count();
 
@@ -62,6 +63,7 @@ use Illuminate\Support\Facades\DB;
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                         ->where("composante_id", $data->composante_id)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
+                                        ->where("droit_inscription", 0)
                                         ->whereMonth("recettes.date_enregistrement", $mois)
                                         ->select("recettes.*", "type_recettes.*", "recette_locations.*")
                                         ->first();
@@ -69,6 +71,7 @@ use Illuminate\Support\Facades\DB;
                                     $sum = DB::table("recettes")
                                         ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                                        ->where("droit_inscription", 0)
                                         ->where("composante_id", $data->composante_id)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
                                         ->whereMonth("recettes.date_enregistrement", $mois)
@@ -81,9 +84,9 @@ use Illuminate\Support\Facades\DB;
                                     $MontantTotal = DB::table("recettes")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                         ->where("recettes.composante_id", $data->composante_id)
+                                        ->where("droit_inscription", 0)
                                         ->where("annee_civil_id", $anne_civil->id)
                                         ->where("location", 0)
-                                    
                                         ->whereMonth("recettes.date_enregistrement", $mois)
                                         ->select("type_recettes.prix")
                                         ->sum("type_recettes.prix");
@@ -95,6 +98,7 @@ use Illuminate\Support\Facades\DB;
                                         $MontantLoca = DB::table("recettes")
                                             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                             ->where("recettes.composante_id", $data->composante_id)
+                                            ->where("droit_inscription", 0)
                                             ->where("annee_civil_id", $anne_civil->id)
                                             ->whereMonth("recettes.date_enregistrement", $mois)
 
@@ -135,7 +139,7 @@ use Illuminate\Support\Facades\DB;
                                         <td>Montant global</td>
                                         <td></td>
                                         <td></td>
-                                        <td>{{$MontantTotal}} KMF</td>
+                                        <td> <strong> {{$MontantTotal}} KMF </strong></td>
                                     </tr>
                                 </tfoot>
                             </table>

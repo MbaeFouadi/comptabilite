@@ -24,8 +24,8 @@ use Illuminate\Support\Facades\DB;
     <div class="page-content-wrapper">
         <div class="container-fluid">
             <div class="row">
-                <div class="col-md-1"></div>
-                <div class="col-md-10">
+                <!-- <div class="col-md-1"></div> -->
+                <div class="col-md-12">
                     <div class="card">
                         <div class="card-body">
 
@@ -37,8 +37,8 @@ use Illuminate\Support\Facades\DB;
                                 <thead>
                                     <tr>
 
-                                        <th>Composante</th>
-                                        <th>Type de recette</th>
+                                        <th>Composantes</th>
+                                        <th>Type de recettes</th>
                                         <th>Nombres</th>
                                         <th>Prix unitaire</th>
                                         <th>Montant</th>
@@ -54,10 +54,23 @@ use Illuminate\Support\Facades\DB;
                                     @endphp
                                     @foreach ($datas as $data)
                                     <?php
+
+                                    $anne_civil = DB::table("annee_civil")->orderByDesc("id")->first();
+
+
+                                    $MontantTotal = DB::table("recettes")
+                                        ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                                        ->where("composante_id", $data->id_composante)
+                                        ->where("location", 0)
+                                        ->where("droit_inscription", 0)
+                                        ->select("type_recettes.prix")
+                                        ->sum("type_recettes.prix");
+
+
                                     $recettes = DB::table("recettes")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                         ->where("recettes.composante_id", $data->id_composante)
-                                        ->select("type_recettes.designation", "recettes.type_recette_id", "type_recettes.prix", "recettes.composante_id")
+                                        ->select("type_recettes.designation", "recettes.type_recette_id", "type_recettes.prix", "recettes.recette_location_id", "recettes.composante_id", "recettes.montant")
                                         ->distinct()
                                         ->get();
 
@@ -94,8 +107,10 @@ use Illuminate\Support\Facades\DB;
                                         $loca = DB::table("recettes")
                                             ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
                                             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
-                                            ->where("composante_id", $recette->composante_id)
+                                            ->where("recettes.composante_id",  $data->id_composante)
                                             ->where("recettes.type_recette_id", $recette->type_recette_id)
+                                            ->where("location", 1)
+                                            ->where("annee_civil_id", $anne_civil->id)
                                             ->select("recettes.*", "type_recettes.*", "recette_locations.*")
                                             ->first();
 
@@ -106,12 +121,6 @@ use Illuminate\Support\Facades\DB;
                                             ->select("recettes.type_recette_id")
                                             ->get();
 
-                                        $MontantTotal = DB::table("recettes")
-                                            ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
-                                            ->where("composante_id", $recette->composante_id)
-                                            ->where("location", 0)
-                                            ->select("type_recettes.prix")
-                                            ->sum("type_recettes.prix");
 
 
 
@@ -123,14 +132,16 @@ use Illuminate\Support\Facades\DB;
                                             ->select("recettes.*", "type_recettes.*", "recette_locations.*")
                                             ->sum("nbre_jour");
 
+                                        $sums = DB::table("recettes")
+                                            ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
+                                            ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+
+                                            ->select("recettes.*", "type_recettes.*", "recette_locations.*")
+                                            ->sum("nbre_jour");
+
                                         $somme_nombre = count($somme_nombres);
                                         $prix = $recette->prix;
 
-                                        $MontantGlobal = DB::table("recettes")
-                                            ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
-
-                                            ->select("type_recettes.prix")
-                                            ->sum("type_recettes.prix");
 
                                         $MontantLocas = DB::table("recettes")
                                             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
@@ -138,23 +149,43 @@ use Illuminate\Support\Facades\DB;
                                             ->select("type_recettes.prix")
                                             ->first();
 
-                                        $MontantGlobal = $MontantGlobal + $MontantLocas->prix * $sum;
 
-                                        if (isset($loca->location) && $loca->location == 1) {
+                                        if ($recette->recette_location_id != NULL) {
+
+
 
                                             $MontantLoca = DB::table("recettes")
                                                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
-                                                ->where("recettes.composante_id", $recette->composante_id)
+                                                ->where("recettes.composante_id",  $data->id_composante)
                                                 ->where("location", 1)
+                                                ->where("droit_inscription", 0)
                                                 ->select("type_recettes.prix")
                                                 ->first();
-
-                                            $MontantTotal = $MontantTotal + $MontantLoca->prix * $sum;
 
 
 
                                             $somme_nombre = $sum;
+                                            $somme_nombrees = $sums;
                                             $somme_montant = $somme_nombre *  $MontantLoca->prix;
+
+                                            $somme_montants = $somme_nombrees *  $MontantLocas->prix;
+
+                                            $MontantTotal = $MontantTotal + $somme_montant;
+
+                                            // $MontantGlobal=$MontantGlobal+$somme_montants;
+                                        }
+
+
+
+                                        if ($recette->montant != NULL) {
+                                            $recette->prix = $recette->montant;
+                                            $somme_nombre = '';
+                                            $somme_montant = $recette->montant;
+
+                                            $MontantTotal = $MontantTotal + $somme_montant;
+
+                                            // $MontantGlobal=$MontantGlobal+$somme_montant;
+
                                         }
 
 
@@ -167,32 +198,37 @@ use Illuminate\Support\Facades\DB;
                                         </td>
 
                                         <td>{{$somme_nombre}}</td>
-                                        <td>{{$recette->prix}}</td>
-                                        <td>{{$somme_montant}} KMF</td>
+                                        <td>{{number_format($recette->prix)}} KMF</td>
+                                        <td>{{number_format($somme_montant)}} KMF</td>
                                     </tr>
+
                                     @endforeach
+
+                                    <?php
+                                    ?>
+
                                     <tr style="background-color:yellow;">
                                         <td colspan="0">Total :</td>
                                         <td> </td>
                                         <td> </td>
                                         <td> </td>
-                                        <td> <strong>{{$MontantTotal}} KMF</strong></td>
 
+                                        <td> <strong>{{number_format($MontantTotal)}} KMF </strong></td>
                                     </tr>
-                                    </tr>
+
                                     @endforeach
                                 </tbody>
-                                <!-- <tfoot>
-                                    <tr>
+
+                                <tfoot>
+                                    <tr style="background-color:blue; color:white">
                                         <td>Montant Global</td>
                                         <td> </td>
                                         <td> </td>
                                         <td> </td>
-                                        <td>{{$MontantGlobal}} KMF</td>
-
+                                        <td> <strong>{{number_format($MontantGlobal)}} KMF</strong> </td>
                                     </tr>
 
-                                </tfoot> -->
+                                </tfoot>
                             </table>
                         </div>
                     </div>
@@ -201,9 +237,9 @@ use Illuminate\Support\Facades\DB;
                 </div>
             </div>
         </div>
-        <div class="col-md-1">
+        <!-- <div class="col-md-1">
 
-        </div>
+        </div> -->
 
     </div>
 

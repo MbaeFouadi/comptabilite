@@ -74,16 +74,15 @@ class RecetteController extends Controller
 
         $date = Carbon::parse($request->date)->translatedFormat('Y-m-d');
 
-        $rece=DB::table("recettes")
-        ->where("type_recette_id",$request->type_recette)
-        ->where("matricule",$request->mat_etud)
-        ->where("annee_civil_id",$civil->id)
-        ->where("composante_id",Auth::user()->composante_id)
-        ->where("date_enregistrement",$date)
-        ->first();
+        $rece = DB::table("recettes")
+            ->where("type_recette_id", $request->type_recette)
+            ->where("matricule", $request->mat_etud)
+            ->where("annee_civil_id", $civil->id)
+            ->where("composante_id", Auth::user()->composante_id)
+            ->where("date_enregistrement", $date)
+            ->first();
 
-        if(!isset($rece))
-        {
+        if (!isset($rece)) {
             DB::table("recettes")->insertOrIgnore([
                 "type_recette_id" => $request->type_recette,
                 "matricule" => $request->mat_etud,
@@ -91,9 +90,8 @@ class RecetteController extends Controller
                 "composante_id" => Auth::user()->composante_id,
                 "date_enregistrement" => now(),
             ]);
-    
         }
-       
+
         $montant = DB::table("type_recettes")
             ->where("id", $request->type_recette)
             ->first();
@@ -140,14 +138,14 @@ class RecetteController extends Controller
 
         $data = json_decode($response->getBody(), true);
 
-        $recette=DB::table("recettes")
-        ->join("type_recettes","type_recettes.id","recettes.type_recette_id")
-        ->where("type_recette_id",$request->type_recette)
-        ->select("recettes.id as recette_id","type_recettes.*")
-        ->orderByDesc("recettes.id")
-        ->first();
+        $recette = DB::table("recettes")
+            ->join("type_recettes", "type_recettes.id", "recettes.type_recette_id")
+            ->where("type_recette_id", $request->type_recette)
+            ->select("recettes.id as recette_id", "type_recettes.*")
+            ->orderByDesc("recettes.id")
+            ->first();
 
-        return view("reçu_recette", compact("data","montant","recette"));
+        return view("reçu_recette", compact("data", "montant", "recette"));
     }
 
     /**
@@ -201,10 +199,6 @@ class RecetteController extends Controller
 
     public function liste(Request $request)
     {
-
-
-
-
         // $date = Carbon::createFromFormat($request->date, $request->date)
         //     ->format('Y-m-d');
         $anne_civil = DB::table("annee_civil")->orderByDesc("id")->first();
@@ -215,6 +209,8 @@ class RecetteController extends Controller
             ->where("recettes.composante_id", Auth::user()->composante_id)
             ->where("annee_civil_id", $anne_civil->id)
             ->where("date_enregistrement", "like", "%$date%")
+            ->where("droit_inscription", 0)
+            ->where("etat", 0)
             ->get();
         //   $da=$request->date;
         if ($recettes->count() > 0) {
@@ -224,7 +220,10 @@ class RecetteController extends Controller
                 ->where("recettes.composante_id", Auth::user()->composante_id)
                 ->where("annee_civil_id", $anne_civil->id)
                 ->where("date_enregistrement", "like", "%$date%")
-                ->select("type_recettes.designation", "type_recettes.prix","recettes.date_enregistrement", "recettes.type_recette_id")
+                ->where("droit_inscription", 0)
+                ->where("etat", 0)
+
+                ->select("type_recettes.designation", "type_recettes.prix", "recettes.date_enregistrement", "recettes.type_recette_id")
                 ->distinct()
                 ->get();
 
@@ -232,13 +231,16 @@ class RecetteController extends Controller
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", Auth::user()->composante_id)
                 ->where("annee_civil_id", $anne_civil->id)
+                ->where("droit_inscription", 0)
+                ->where("etat", 0)
+
                 ->where("date_enregistrement", "like", "%$date%")
                 ->select("type_recettes.prix")
 
                 ->sum("type_recettes.prix");
 
 
-            return view("liste_recette", compact("recettes", "datas", "MontantTotal","da"));
+            return view("liste_recette", compact("recettes", "datas", "MontantTotal", "da"));
         } else {
 
 
@@ -288,11 +290,11 @@ class RecetteController extends Controller
         $holo = DB::table("hologrammes")
             ->where("composante_id", Auth::user()->composante_id)
             ->first();
-            $recette = DB::table("type_recettes")
+        $recette = DB::table("type_recettes")
             ->where("id", $request->type_recette_id)
-            ->first(); 
-        if ((isset($holo) && $holo->holo_restant > 0 ) || ($recette->hologramme == 0)) {
-            
+            ->first();
+        if ((isset($holo) && $holo->holo_restant > 0) || ($recette->hologramme == 0)) {
+
 
             $client = new Client();
 
@@ -305,7 +307,7 @@ class RecetteController extends Controller
             ]);
 
             $data = json_decode($response->getBody(), true);
-          
+
             // $type_recette=$request->type_recette;
             $annee = DB::table("annee")->where("designation_annee", $request->annee)->first();
             $annee_id = $annee->id;
@@ -327,12 +329,12 @@ class RecetteController extends Controller
             $messages = "Vous avez épuisé le nombre d'hologramme";
             $annees = DB::table("annee")->orderBy("id", "desc")->get();
             $recettes = DB::table("type_recettes")
-                    ->join("composantes_types_recettes", 'type_recettes.id', 'composantes_types_recettes.type_recette_id')
-                    ->where("composantes_types_recettes.composante_id", Auth::user()->composante_id)
-                    ->where("employe", "=", 0)
-                    ->select("type_recettes.id as id_type_recette", "type_recettes.*", "composantes_types_recettes.*")
-                    ->get();
-                return view('add_recette', compact("recettes", "annees", "messages"));
+                ->join("composantes_types_recettes", 'type_recettes.id', 'composantes_types_recettes.type_recette_id')
+                ->where("composantes_types_recettes.composante_id", Auth::user()->composante_id)
+                ->where("employe", "=", 0)
+                ->select("type_recettes.id as id_type_recette", "type_recettes.*", "composantes_types_recettes.*")
+                ->get();
+            return view('add_recette', compact("recettes", "annees", "messages"));
         }
     }
 
@@ -352,33 +354,33 @@ class RecetteController extends Controller
     public function add_recette_location()
     {
         $recettes = DB::table("type_recettes")
-        ->join("composantes_types_recettes", 'type_recettes.id', 'composantes_types_recettes.type_recette_id')
-        ->where("composantes_types_recettes.composante_id", Auth::user()->composante_id)
-     
-        ->where("location", "=", 1)
-        ->select("type_recettes.id as id_type_recette", "type_recettes.*", "composantes_types_recettes.*")
-        ->get();
-        return view("add_recette_location",compact("recettes"));
+            ->join("composantes_types_recettes", 'type_recettes.id', 'composantes_types_recettes.type_recette_id')
+            ->where("composantes_types_recettes.composante_id", Auth::user()->composante_id)
+
+            ->where("location", "=", 1)
+            ->select("type_recettes.id as id_type_recette", "type_recettes.*", "composantes_types_recettes.*")
+            ->get();
+        return view("add_recette_location", compact("recettes"));
     }
 
     public function store_recette_location(Request $request)
     {
         $request->validate([
-            "description"=>'required',
-            "nbre_jour"=>'required',
-            "facture"=>'required|mimes:pdf|max:2048',
-            "type_recette_id"=>'required',
+            "description" => 'required',
+            "nbre_jour" => 'required',
+            "facture" => 'required|mimes:pdf|max:2048',
+            "type_recette_id" => 'required',
         ]);
 
-        $facture = $request->description. '.' . $request->facture->extension();
+        $facture = $request->description . '.' . $request->facture->extension();
 
         $request->facture->move(public_path('assets/facture_location'), $facture);
-        
+
         DB::table("recette_locations")->insert([
-            "description"=>$request->description,
-            "nbre_jour"=>$request->nbre_jour,
-            "facture"=>$facture,
-           
+            "description" => $request->description,
+            "nbre_jour" => $request->nbre_jour,
+            "facture" => $facture,
+
         ]);
 
         $annee = DB::table("annee_civil")->orderByDesc("id")->first();
@@ -394,7 +396,7 @@ class RecetteController extends Controller
         $data = DB::table("recette_locations")
             ->join("recettes", "recette_locations.id", "recettes.recette_location_id")
             ->join("type_recettes", "type_recettes.id", "recettes.type_recette_id")
-            ->where("recettes.recette_location_id",$location->id)
+            ->where("recettes.recette_location_id", $location->id)
             ->orderByDesc("recette_locations.id")->first();
 
         $caisse = DB::table("caisse")->where("composante_id", Auth::user()->composante_id)
@@ -406,7 +408,7 @@ class RecetteController extends Controller
                 ->where('composante_id', Auth::user()->composante_id)
                 ->update(['montant' => $somme]);
         } else {
-            $somme = $data->prix*$data->nbre_jour;
+            $somme = $data->prix * $data->nbre_jour;
 
             DB::table("caisse")
                 ->insert([
@@ -415,8 +417,6 @@ class RecetteController extends Controller
                 ]);
         }
 
-        return back()->with("success","Enregistrement effectués avec succès");
-
-     
+        return back()->with("success", "Enregistrement effectués avec succès");
     }
 }

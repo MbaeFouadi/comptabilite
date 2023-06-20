@@ -23,6 +23,8 @@ class gestionnaireController extends Controller
 
         $recettes = DB::table("recettes")
             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+            ->where("droit_inscription", 0)
+            ->where("etat", 0)
             ->where("recettes.composante_id", Auth::user()->composante_id)
             ->where("annee_civil_id", $anne_civil->id)
 
@@ -33,6 +35,8 @@ class gestionnaireController extends Controller
             $datas = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", Auth::user()->composante_id)
+                ->where("droit_inscription", 0)
+                ->where("etat", 0)
                 ->where("annee_civil_id", $anne_civil->id)
 
                 ->select("type_recettes.designation", "type_recettes.prix", "recettes.type_recette_id", "recettes.composante_id")
@@ -41,6 +45,9 @@ class gestionnaireController extends Controller
 
             $MontantTotal = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                ->where("droit_inscription", 0)
+                ->where("etat", 0)
+
                 ->where("recettes.composante_id", Auth::user()->composante_id)
                 ->where("annee_civil_id", $anne_civil->id)
 
@@ -184,7 +191,7 @@ class gestionnaireController extends Controller
                         ->where("plan_comptable_id", $request->numero_plan)
                         ->where("annee_civil_id", $anne_civile->id)
                         ->first();
-                    $som=$montant_depense + $request->montant;
+                    $som = $montant_depense + $request->montant;
                     if (isset($montant_prev) && $montant_prev->montant_previsionnel >= $montant_depense && $montant_prev->montant_previsionnel >= $request->montant && $montant_prev->montant_previsionnel >= $som) {
 
                         DB::table("depenses")
@@ -303,6 +310,8 @@ class gestionnaireController extends Controller
         $recettes = DB::table("recettes")
             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
             ->where("recettes.composante_id", Auth::user()->composante_id)
+            ->where("droit_inscription", 0)
+            ->where("etat", 0)
             ->where("annee_civil_id", $anne_civil->id)
             ->whereMonth("date_enregistrement", $mois)
             ->get();
@@ -312,6 +321,8 @@ class gestionnaireController extends Controller
             $datas = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", Auth::user()->composante_id)
+                ->where("droit_inscription", 0)
+                ->where("etat", 0)
                 ->where("annee_civil_id", $anne_civil->id)
                 ->whereMonth("date_enregistrement", $mois)
 
@@ -322,6 +333,8 @@ class gestionnaireController extends Controller
             $MontantTotal = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", Auth::user()->composante_id)
+                ->where("droit_inscription", 0)
+                ->where("etat", 0)
                 ->where("annee_civil_id", $anne_civil->id)
                 ->whereMonth("date_enregistrement", $mois)
 

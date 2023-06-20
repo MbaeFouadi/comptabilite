@@ -30,6 +30,8 @@ class chargeRecetteController extends Controller
         $recettes = DB::table("recettes")
             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
             ->where("recettes.composante_id", $request->composante_id)
+            ->where("droit_inscription",0)
+            ->where("etat",0)
             ->where("annee_civil_id", $anne_civil->id)
             ->where("date_enregistrement", "like", "%$date%")
             ->get();
@@ -39,6 +41,9 @@ class chargeRecetteController extends Controller
             $datas = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", $request->composante_id)
+                ->where("droit_inscription", 0)
+            ->where("etat",0)
+
                 ->where("annee_civil_id", $anne_civil->id)
                 ->where("date_enregistrement", "like", "%$date%")
                 ->select("type_recettes.designation", "type_recettes.prix", "recettes.date_enregistrement", "recettes.type_recette_id", "recettes.composante_id")
@@ -48,6 +53,9 @@ class chargeRecetteController extends Controller
             $MontantTotal = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", $request->composante_id)
+                ->where("droit_inscription", 0)
+            ->where("etat",0)
+
                 ->where("annee_civil_id", $anne_civil->id)
                 ->where("date_enregistrement", "like", "%$date%")
                 ->select("type_recettes.prix")
@@ -91,8 +99,85 @@ class chargeRecetteController extends Controller
             ->distinct()
             ->get();
 
+            
+            
+            $Montant1= DB::table("recettes")
+            ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+            ->where("location", 0)
+            ->where("droit_inscription", 0)
+            ->where("annee_civil_id", $anne_civil->id)
+            ->select("type_recettes.prix")
+            ->sum("type_recettes.prix");
 
-        return view("consolidation_recette", compact("datas"));
+            $Montant2= DB::table("recettes")
+            ->where("annee_civil_id", $anne_civil->id)
+            ->sum("montant");
+
+            $nbre_jr= DB::table("recettes")
+            ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+            ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
+            ->where("location", 1)
+            ->where("droit_inscription", 0)
+            ->where("annee_civil_id", $anne_civil->id)
+            ->select("recettes.*", "type_recettes.*", "recette_locations.*")
+            ->sum("nbre_jour");
+
+            $prix=DB::table("recettes")
+            ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
+            ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+            ->where("location", 1)
+            ->where("droit_inscription", 0)
+            ->where("annee_civil_id", $anne_civil->id)
+            ->select("type_recettes.prix")
+            ->first("type_recettes.prix");
+
+            $montant3= $prix->prix * $nbre_jr;
+
+           $MontantGlobal=$Montant1+$Montant2+$montant3;
+
+            // $mon = DB::table("recettes")
+            // ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
+            // ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+            // ->where("location", 1)
+            // ->where("annee_civil_id", $anne_civil->id)
+            // ->select("recettes.*", "type_recettes.*", "recette_locations.*")
+            // ->first();
+
+            // $sum = DB::table("recettes")
+            // ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
+            // ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+            // ->select("recettes.*", "type_recettes.*", "recette_locations.*")
+            // ->sum("nbre_jour");
+
+            // if(isset($mon) && $mon->recette_location_id  == 1)
+            // {
+                
+            //     $MontantLoca = DB::table("recettes")
+            //     ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+            //     ->where("location", 1)
+            //     ->where("droit_inscription", 0)
+            //     ->select("type_recettes.prix")
+            //     ->first();
+
+
+
+            //     $somme_nombre = $sum;
+            //     $somme_montant = $somme_nombre *  $MontantLoca->prix;
+            //     $MontantGlobal= $MontantGlobal + $somme_montant;
+            // }
+
+            // if($mon->montant != NULL)
+            // {
+            //     $somme_montant=$mon->montant;
+
+            //     $MontantGlobal =  $MontantGlobal + $somme_montant;
+            // }
+
+
+
+
+
+        return view("consolidation_recette", compact("datas","MontantGlobal"));
     }
 
     public function valider_depot()
@@ -168,6 +253,8 @@ class chargeRecetteController extends Controller
         $recettes = DB::table("recettes")
             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
             ->where("recettes.composante_id", $request->composante_id)
+            ->where("droit_inscription", 0)
+            ->where("etat",0)
             ->where("annee_civil_id", $anne_civil->id)
             ->whereMonth("date_enregistrement", $mois)
             ->get();
@@ -176,6 +263,8 @@ class chargeRecetteController extends Controller
 
             $datas = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                ->where("droit_inscription", 0)
+            ->where("etat",0)
                 ->where("recettes.composante_id", $request->composante_id)
                 ->where("annee_civil_id", $anne_civil->id)
                 ->whereMonth("date_enregistrement", $mois)
@@ -187,6 +276,9 @@ class chargeRecetteController extends Controller
             $MontantTotal = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", $request->composante_id)
+                ->where("droit_inscription", 0)
+            ->where("etat",0)
+
                 ->where("annee_civil_id", $anne_civil->id)
                 ->whereMonth("recettes.date_enregistrement", $mois)
                 ->select("type_recettes.prix")
@@ -351,6 +443,9 @@ class chargeRecetteController extends Controller
         $recettes = DB::table("recettes")
             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
             ->where("recettes.composante_id", $request->composante_id)
+            ->where("droit_inscription", 0)
+            ->where("etat",0)
+
             ->where("annee_civil_id", $annee_civil->id)
 
             ->get();
@@ -361,14 +456,17 @@ class chargeRecetteController extends Controller
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                 ->where("recettes.composante_id", $request->composante_id)
                 ->where("annee_civil_id", $annee_civil->id)
-
-
+                ->where("droit_inscription", 0)
+            ->where("etat",0)
                 ->select("type_recettes.designation", "type_recettes.prix", "recettes.type_recette_id", "recettes.composante_id")
                 ->distinct()
                 ->get();
 
             $MontantTotal = DB::table("recettes")
                 ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                ->where("droit_inscription", 0)
+            ->where("etat",0)
+
                 ->where("recettes.composante_id", $request->composante_id)
                 ->where("annee_civil_id", $annee_civil->id)
 
@@ -399,5 +497,77 @@ class chargeRecetteController extends Controller
         ->join("composantes", "composantes.id", "caisse.composante_id")
         ->get();
         return view('solder_recette_par_composantes', compact('soldes_recettes_par_composantes'));
+    }
+
+    public function add_recette_inscription()
+    {
+        $composantes = DB::table("composantes")
+   
+        ->get();
+        
+        $recettes = DB::table("type_recettes")
+        ->join("composantes_types_recettes", 'type_recettes.id', 'composantes_types_recettes.type_recette_id')
+        ->where("composantes_types_recettes.composante_id",Auth::user()->composante_id)
+        ->where("droit_inscription",1)
+        ->select("type_recettes.*","type_recettes.id as id_type_recette","composantes_types_recettes.*")
+        ->get();
+
+        return view("store_recette_inscription",compact("composantes","recettes"));
+        
+    }
+
+    public function store_recette_inscription(Request $request)
+    {
+        $request->validate([
+            "type_recette_id"=>"required",
+            "montant"=>"required",
+            "composante_id"=>"required"
+        ]);
+
+        $civil = DB::table("annee_civil")->orderByDesc("id")->first();
+
+        $data=DB::table("recettes")
+        ->where("type_recette_id",$request->type_recette_id)
+        ->where("composante_id",$request->composante_id)
+        ->first();
+
+        if(!isset($data))
+        {
+            DB::table("recettes")->insert([
+                "type_recette_id" => $request->type_recette_id,
+                "montant" => $request->montant,
+                "annee_civil_id" => $civil->id,
+                "composante_id" =>$request->composante_id,
+                "date_enregistrement" => now(),
+            ]);
+
+            return back()->with("success","Recette enregistré avec success");
+        }
+        else
+        {
+            return back()->with("error","Vous avez déjà enregistrer ce type de recettte");
+        }
+
+
+    }
+
+    public function add_recette_preinscription()
+    {
+        $composantes = DB::table("composantes")
+        ->where("id","=",1)
+        ->get();
+        
+        $recettes = DB::table("type_recettes")
+        ->join("composantes_types_recettes", 'type_recettes.id', 'composantes_types_recettes.type_recette_id')
+        ->where("composantes_types_recettes.composante_id",Auth::user()->composante_id)
+        ->where("droit_inscription",1)
+        ->select("type_recettes.*","type_recettes.id as id_type_recette","composantes_types_recettes.*")
+        ->get();
+
+        return view("store_recette_preinscription",compact("composantes","recettes"));
+    }
+
+    public function store_recette_preinscription(Request $request)
+    {
     }
 }

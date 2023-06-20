@@ -36,7 +36,7 @@ use Illuminate\Support\Facades\DB;
                             <table id="datatable-buttons" class="table table-striped table-bordered dt-responsive nowrap" style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                 <thead>
                                     <tr>
-                                        <th>Type de recette</th>
+                                        <th>Type de recettes</th>
                                         <th>Nombre</th>
                                         <th>Prix unitaire</th>
                                         <th>Montant Total</th>
@@ -123,11 +123,11 @@ use Illuminate\Support\Facades\DB;
 
                                 </tbody>
                                 <tfoot>
-                                    <tr>
+                                    <tr style="font-weight: bolder;">
                                         <td>Montant global</td>
                                         <td></td>
                                         <td></td>
-                                        <td>{{$MontantTotal}} KMF</td>
+                                        <td> <strong>{{$MontantTotal}} KMF </strong> </td>
                                     </tr>
                                 </tfoot>
                             </table>

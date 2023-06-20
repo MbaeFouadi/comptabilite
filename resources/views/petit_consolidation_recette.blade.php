@@ -52,13 +52,15 @@ use Illuminate\Support\Facades\DB;
 
                                     $nbre_recette = DB::table("recettes")
                                         ->where("type_recette_id", $data->type_recette_id)
+                                        ->where("composante_id", Auth::user()->composante_id)
+                                        ->where("annee_civil_id", $anne_civil->id)
                                         ->count();
 
                                     $prix = $data->prix;
                                     $loca = DB::table("recettes")
                                         ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
-
+                                        ->where("droit_inscription", 0)
                                         ->where("composante_id", Auth::user()->composante_id)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
                                         ->select("recettes.*", "type_recettes.*", "recette_locations.*")
@@ -67,6 +69,7 @@ use Illuminate\Support\Facades\DB;
                                     $sum = DB::table("recettes")
                                         ->join("recette_locations", "recettes.recette_location_id", "recette_locations.id")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                                        ->where("droit_inscription", 0)
                                         ->where("composante_id", Auth::user()->composante_id)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
                                         ->select("recettes.*", "type_recettes.*", "recette_locations.*")
@@ -75,6 +78,7 @@ use Illuminate\Support\Facades\DB;
                                     $total = $nbre_recette * $prix;
                                     $MontantTotal = DB::table("recettes")
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                                        ->where("droit_inscription", 0)
                                         ->where("recettes.composante_id", Auth::user()->composante_id)
                                         ->where("annee_civil_id", $anne_civil->id)
                                         ->where("location", 0)
@@ -85,6 +89,7 @@ use Illuminate\Support\Facades\DB;
 
                                         $MontantLoca = DB::table("recettes")
                                             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
+                                            ->where("droit_inscription", 0)
                                             ->where("recettes.composante_id", Auth::user()->composante_id)
                                             ->where("annee_civil_id", $anne_civil->id)
                                             ->where("location", 1)

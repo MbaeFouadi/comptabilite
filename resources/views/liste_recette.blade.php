@@ -54,6 +54,7 @@ use Illuminate\Support\Facades\DB;
                                         ->where("type_recette_id", $data->type_recette_id)
                                         ->where("composante_id", Auth::user()->composante_id)
                                         ->where("date_enregistrement", $data->date_enregistrement)
+                                        ->where("annee_civil_id", $anne_civil->id)
                                         ->count();
                                     $prix = $data->prix;
                                     $loca = DB::table("recettes")
@@ -62,6 +63,8 @@ use Illuminate\Support\Facades\DB;
                                         ->where("date_enregistrement", $data->date_enregistrement)
                                         ->where("composante_id", Auth::user()->composante_id)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
+                                        ->where("droit_inscription", 0)
+                                        ->where("annee_civil_id", $anne_civil->id)
                                         ->select("recettes.*", "type_recettes.*", "recette_locations.*")
                                         ->first();
 
@@ -71,6 +74,7 @@ use Illuminate\Support\Facades\DB;
                                         ->where("date_enregistrement", $data->date_enregistrement)
                                         ->where("composante_id", Auth::user()->composante_id)
                                         ->where("recettes.type_recette_id", $data->type_recette_id)
+                                        ->where("annee_civil_id", $anne_civil->id)
                                         ->select("recettes.*", "type_recettes.*", "recette_locations.*")
                                         ->sum("nbre_jour");
 
@@ -78,6 +82,7 @@ use Illuminate\Support\Facades\DB;
                                         ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                         ->where("recettes.composante_id", Auth::user()->composante_id)
                                         ->where("annee_civil_id", $anne_civil->id)
+                                        ->where("droit_inscription", 0)
                                         ->where("location", 0)
                                         ->where("date_enregistrement", $data->date_enregistrement)
                                         ->select("type_recettes.prix")
@@ -92,6 +97,7 @@ use Illuminate\Support\Facades\DB;
                                             ->join("type_recettes", "recettes.type_recette_id", "type_recettes.id")
                                             ->where("recettes.composante_id", Auth::user()->composante_id)
                                             ->where("annee_civil_id", $anne_civil->id)
+                                            ->where("droit_inscription", 0)
                                             ->where("location", 1)
                                             ->where("date_enregistrement", $data->date_enregistrement)
                                             ->select("type_recettes.prix")
@@ -122,14 +128,13 @@ use Illuminate\Support\Facades\DB;
                                     </tr>
                                     @endforeach
 
-
                                 </tbody>
                                 <tfoot>
                                     <tr>
                                         <td>Montant global</td>
                                         <td></td>
                                         <td></td>
-                                        <td>{{$MontantTotal}} KMF</td>
+                                        <td> <strong>{{$MontantTotal}} KMF </strong></td>
                                     </tr>
                                 </tfoot>
                             </table>
